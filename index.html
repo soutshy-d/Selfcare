@@ -1,0 +1,3431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="CareLog" />
+  <meta name="theme-color" content="#F7F8FA" />
+  <title>CareLog — Routine & Care Tracker</title>
+
+  <!-- Custom Home Screen Icons (place icon.png in the same repo folder) -->
+  <link rel="apple-touch-icon" href="icon.png" />
+  <link rel="icon" type="image/png" href="icon.png" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23E87A90'/><text x='50' y='67' font-size='54' text-anchor='middle'>✨</text></svg>" />
+
+  <style>
+    :root {
+      --bg: #F7F8FA;
+      --surface: #FFFFFF;
+      --surface-subtle: #F0F2F6;
+      --border: #E6E9EF;
+      --text-primary: #1A1D26;
+      --text-secondary: #687082;
+      --text-muted: #9AA2B1;
+      --accent: #E87A90;
+      --accent-soft: rgba(232, 122, 144, 0.14);
+      --success: #2EA87E;
+      --success-soft: rgba(46, 168, 126, 0.14);
+      --warning: #E09132;
+      --warning-soft: rgba(224, 145, 50, 0.14);
+      --danger: #E05260;
+      --danger-soft: rgba(224, 82, 96, 0.12);
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --shadow-sm: 0 2px 8px rgba(17, 24, 39, 0.04);
+      --shadow-md: 0 8px 24px rgba(17, 24, 39, 0.08);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      touch-action: manipulation;
+      overscroll-behavior-y: none;
+    }
+
+    button, select, input, textarea {
+      font-family: inherit;
+      touch-action: manipulation;
+    }
+
+    /* Prevent iOS Safari auto-zoom on focus by keeping inputs >= 16px */
+    input, select, textarea {
+      font-size: 16px !important;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      padding-top: calc(12px + var(--safe-top));
+      padding-bottom: calc(92px + var(--safe-bottom));
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* Header */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(247, 248, 250, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding: calc(10px + var(--safe-top)) 16px 10px;
+      border-bottom: 1px solid rgba(230, 233, 239, 0.7);
+      margin-top: calc(-12px - var(--safe-top));
+      margin-bottom: 14px;
+    }
+
+    .top-bar-inner {
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .brand-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin: 2px 0 0;
+      font-weight: 500;
+    }
+
+    .btn-primary-sm {
+      background: var(--text-primary);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 999px;
+      padding: 9px 15px;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary-sm:active {
+      transform: scale(0.96);
+    }
+
+    /* Filter Pills */
+    .pill-scroller {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+      scrollbar-width: none;
+    }
+    .pill-scroller::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-pill {
+      flex: 0 0 auto;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .filter-pill.active {
+      background: var(--text-primary);
+      color: #FFFFFF;
+      border-color: var(--text-primary);
+    }
+
+    .filter-pill.due-pill {
+      border-color: rgba(224, 145, 50, 0.45);
+      color: #B8701B;
+      background: #FFFBF5;
+    }
+
+    .filter-pill.due-pill.active {
+      background: var(--warning);
+      border-color: var(--warning);
+      color: #FFFFFF;
+    }
+
+    /* Section Headers */
+    .category-section {
+      margin-bottom: 22px;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding: 0 2px;
+    }
+
+    .category-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .category-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .category-name {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    .category-count {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--surface-subtle);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .category-add-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .category-add-btn:active {
+      background: var(--surface-subtle);
+    }
+
+    /* Step Cards */
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 13px 14px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.12s ease, border-color 0.2s ease;
+    }
+
+    .step-card.done-today {
+      border-color: rgba(46, 168, 126, 0.35);
+    }
+
+    .step-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .step-info {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .step-icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .step-text {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .step-name {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 0 0 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .step-product-sub {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin: 0 0 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .step-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-done {
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    .badge-due {
+      background: var(--warning-soft);
+      color: var(--warning);
+    }
+
+    .badge-neutral {
+      background: var(--surface-subtle);
+      color: var(--text-secondary);
+    }
+
+    .check-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+    }
+
+    .check-btn:active {
+      transform: scale(0.88);
+    }
+
+    .check-btn.checked {
+      color: #FFFFFF;
+      border-color: transparent;
+    }
+
+    /* Mini Heatmap Strip (14d or 12w) */
+    .mini-strip-wrap {
+      margin-top: 11px;
+      padding-top: 9px;
+      border-top: 1px solid var(--surface-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .mini-strip {
+      display: grid;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .mini-strip.cols-14 {
+      grid-template-columns: repeat(14, 1fr);
+    }
+
+    .mini-strip.cols-12 {
+      grid-template-columns: repeat(12, 1fr);
+    }
+
+    .mini-dot {
+      height: 11px;
+      border-radius: 3px;
+      background: var(--surface-subtle);
+      transition: transform 0.1s ease;
+    }
+
+    .mini-dot.today-ring {
+      box-shadow: inset 0 0 0 1.5px rgba(26, 29, 38, 0.28);
+    }
+
+    .mini-strip-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Multi-Step Chip Drawer in Analytics */
+    .step-drawer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .drawer-trigger {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 13px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .drawer-trigger.filtered {
+      border-color: var(--text-primary);
+      background: #FBFBFD;
+    }
+
+    .step-chip-tray {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tray-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 9px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .tray-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .multi-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .multi-chip.selected {
+      background: var(--surface);
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .chip-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Analytics Cards & KPIs */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 0 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .kpi-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .kpi-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .kpi-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Tag Highlight Bar in Analytics */
+    .tag-highlight-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--surface-subtle);
+      scrollbar-width: none;
+    }
+    .tag-highlight-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .highlight-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      flex-shrink: 0;
+      margin-right: 2px;
+    }
+
+    .tag-filter-chip {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .tag-filter-chip.active {
+      background: var(--text-primary);
+      color: #FFFFFF;
+      border-color: var(--text-primary);
+    }
+
+    /* Monthly Calendar */
+    .cal-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .cal-month-title {
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .cal-nav-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-primary);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .icon-btn:active {
+      background: var(--surface-subtle);
+    }
+
+    .cal-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+
+    .cal-cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      border: 1.5px solid transparent;
+      background: var(--surface-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      padding: 2px;
+      transition: transform 0.1s ease;
+    }
+
+    .cal-cell:active {
+      transform: scale(0.92);
+    }
+
+    .cal-cell.empty {
+      background: transparent;
+      cursor: default;
+    }
+
+    .cal-cell.selected {
+      border-color: var(--text-primary);
+    }
+
+    .cal-cell.tag-highlighted {
+      box-shadow: 0 0 0 2px var(--warning), inset 0 0 0 1px #FFFFFF;
+      background: var(--warning-soft) !important;
+    }
+
+    .cal-cell.is-today .cal-day-num {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .cal-day-num {
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .cal-tag-badge {
+      position: absolute;
+      top: 2px;
+      right: 3px;
+      font-size: 8px;
+      line-height: 1;
+    }
+
+    .cal-dots {
+      display: flex;
+      gap: 2px;
+      margin-top: 4px;
+      height: 5px;
+      align-items: center;
+    }
+
+    .cal-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+    }
+
+    /* Day Inspector inside Analytics */
+    .day-inspector {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .day-inspector-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .day-inspector-title {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .day-inspector-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Check-in Tags inside Day Inspector */
+    .day-tags-box {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+
+    .day-tags-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text-muted);
+      margin-bottom: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .day-tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .checkin-tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .checkin-tag-pill.active {
+      background: var(--text-primary);
+      color: #FFFFFF;
+      border-color: var(--text-primary);
+    }
+
+    .checkin-tag-pill.add-tag-btn {
+      border-style: dashed;
+      color: var(--text-primary);
+      background: transparent;
+    }
+
+    .inline-tag-form {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .inline-tag-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* 3-Zone Retroactive Step Rows */
+    .retro-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .retro-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: var(--surface-subtle);
+      gap: 10px;
+      border: 1px solid transparent;
+    }
+
+    .retro-row.logged {
+      background: rgba(46, 168, 126, 0.09);
+      border-color: rgba(46, 168, 126, 0.25);
+    }
+
+    .retro-main-zone {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .retro-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .retro-text-col {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .retro-step-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .retro-product-sub {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      max-width: 100%;
+    }
+
+    .retro-product-sub span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .retro-check-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .retro-check-btn.checked {
+      color: #FFFFFF;
+      border-color: transparent;
+    }
+
+    /* Inline Past-Log Product Editor */
+    .past-product-editor {
+      margin-top: 6px;
+      padding: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    /* Category / Step Breakdown Bars */
+    .bar-row {
+      margin-bottom: 11px;
+    }
+    .bar-row:last-child {
+      margin-bottom: 0;
+    }
+    .bar-label-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    .bar-track {
+      height: 8px;
+      border-radius: 999px;
+      background: var(--surface-subtle);
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    /* 12-Week Consistency Grid */
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 4px;
+    }
+    .heatmap-col {
+      display: grid;
+      grid-template-rows: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .heat-cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 3px;
+      background: var(--surface-subtle);
+    }
+
+    /* Manage View */
+    .manage-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--surface-subtle);
+      gap: 10px;
+    }
+    .manage-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .manage-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .manage-item-title {
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .manage-item-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .manage-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .mini-action-btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      border-radius: 8px;
+      padding: 5px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .mini-action-btn.danger {
+      color: var(--danger);
+      border-color: rgba(224, 82, 96, 0.25);
+    }
+
+    .tag-manage-group {
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--surface-subtle);
+    }
+    .tag-manage-group:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .tag-pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 7px;
+    }
+
+    .manage-tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface-subtle);
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .manage-tag-del {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0 2px;
+      font-size: 12px;
+    }
+
+    .btn-block {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .btn-block.primary {
+      background: var(--text-primary);
+      color: #FFFFFF;
+      border-color: var(--text-primary);
+    }
+    .btn-block.danger {
+      color: var(--danger);
+      border-color: rgba(224, 82, 96, 0.3);
+    }
+
+    .export-timestamp {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: -2px 0 12px;
+      font-weight: 500;
+    }
+
+    /* Segmented Toggle in Step Modal */
+    .seg-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 3px;
+    }
+    .seg-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      padding: 8px 6px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .seg-btn.active {
+      background: var(--surface);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Product History & Correlation in Step Detail Sheet */
+    .prod-history-card {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+
+    .prod-history-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .prod-history-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .prod-history-count {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      background: var(--surface);
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+
+    .prod-corr-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .corr-badge {
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 999px;
+      color: var(--text-secondary);
+    }
+
+    .quick-pick-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .quick-pick-pill {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-primary);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      padding: 8px 16px calc(8px + var(--safe-bottom));
+    }
+
+    .bottom-nav-inner {
+      max-width: 600px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .nav-tab {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 6px 4px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .nav-tab.active {
+      color: var(--text-primary);
+      background: var(--surface-subtle);
+    }
+
+    .nav-icon {
+      font-size: 19px;
+      line-height: 1;
+    }
+
+    /* Modals / Bottom Sheets */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(17, 24, 39, 0.45);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-width: 600px;
+      background: var(--surface);
+      border-radius: 22px 22px 0 0;
+      padding: 18px 18px calc(22px + var(--safe-bottom));
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-md);
+      animation: slideUp 0.2s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(24px); opacity: 0.7; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-primary);
+    }
+
+    .color-swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .swatch {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+    }
+
+    .swatch.selected {
+      border-color: var(--text-primary);
+      transform: scale(1.1);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: calc(16px + var(--safe-top));
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      z-index: 80;
+      background: var(--text-primary);
+      color: #FFFFFF;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: var(--shadow-md);
+      transition: transform 0.22s ease;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 36px 16px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="toast" class="toast"></div>
+
+  <div class="app-shell">
+    <header class="top-bar">
+      <div class="top-bar-inner">
+        <div>
+          <h1 class="brand-title" id="headerTitle">Routines</h1>
+          <p class="brand-subtitle" id="headerSubtitle"></p>
+        </div>
+        <button class="btn-primary-sm" id="headerActionBtn" data-action="open-step-modal">+ Add Step</button>
+      </div>
+    </header>
+
+    <main class="container" id="mainContent"></main>
+  </div>
+
+  <!-- Bottom Tab Bar -->
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="nav-tab active" data-tab="today">
+        <span class="nav-icon">✓</span>
+        <span>Routines</span>
+      </button>
+      <button class="nav-tab" data-tab="analytics">
+        <span class="nav-icon">📊</span>
+        <span>Analytics</span>
+      </button>
+      <button class="nav-tab" data-tab="manage">
+        <span class="nav-icon">⚙️</span>
+        <span>Lists & Data</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Step Add/Edit Modal -->
+  <div class="modal-backdrop" id="stepModal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h2 class="modal-title" id="stepModalTitle">Add Step</h2>
+        <button class="icon-btn" data-action="close-modals">✕</button>
+      </div>
+      <form id="stepForm">
+        <input type="hidden" id="stepIdInput" />
+        <div class="form-group">
+          <label class="form-label">List / Category</label>
+          <select class="form-input" id="stepCategoryInput" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Step Name</label>
+          <input type="text" class="form-input" id="stepNameInput" placeholder="e.g., Retinol Serum, Hair Mask..." required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Current Product (Optional)</label>
+          <input type="text" class="form-input" id="stepProductInput" placeholder="e.g., La Roche-Posay Retinol 0.5%" />
+        </div>
+        <div style="display:grid; grid-template-columns: 80px 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Icon</label>
+            <input type="text" class="form-input" id="stepIconInput" value="✨" maxlength="4" style="text-align:center;" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Target Cadence</label>
+            <select class="form-input" id="stepCadenceInput">
+              <option value="0">Flexible / No target</option>
+              <option value="1">Daily</option>
+              <option value="2">Every 2 days</option>
+              <option value="3">Every 3 days</option>
+              <option value="4">Every 4 days</option>
+              <option value="7">Weekly (7 days)</option>
+              <option value="14">Every 2 weeks</option>
+              <option value="30">Monthly (30 days)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Card Mini-Grid View</label>
+          <div class="seg-toggle">
+            <button type="button" class="seg-btn" id="stripBtn14d" data-action="set-strip-mode" data-mode="14d">14 Days</button>
+            <button type="button" class="seg-btn" id="stripBtn12w" data-action="set-strip-mode" data-mode="12w">12 Weeks</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Accent Color</label>
+          <div class="color-swatches" id="stepColorSwatches"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes (Optional)</label>
+          <input type="text" class="form-input" id="stepNotesInput" placeholder="e.g., Leave on for 15 mins..." />
+        </div>
+        <button type="submit" class="btn-block primary">Save Step</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Category (Main List) Add/Edit Modal -->
+  <div class="modal-backdrop" id="categoryModal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h2 class="modal-title" id="categoryModalTitle">Add List</h2>
+        <button class="icon-btn" data-action="close-modals">✕</button>
+      </div>
+      <form id="categoryForm">
+        <input type="hidden" id="categoryIdInput" />
+        <div style="display:grid; grid-template-columns: 80px 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Icon</label>
+            <input type="text" class="form-input" id="categoryIconInput" value="🧴" maxlength="4" style="text-align:center;" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">List Name</label>
+            <input type="text" class="form-input" id="categoryNameInput" placeholder="e.g., Shower, Home Laser..." required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">List Color</label>
+          <div class="color-swatches" id="categoryColorSwatches"></div>
+        </div>
+        <button type="submit" class="btn-block primary">Save List</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Check-In Tag Add Modal -->
+  <div class="modal-backdrop" id="tagModal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h2 class="modal-title">New Check-In Tag</h2>
+        <button class="icon-btn" data-action="close-modals">✕</button>
+      </div>
+      <form id="tagForm">
+        <div class="form-group">
+          <label class="form-label">List / Category</label>
+          <select class="form-input" id="tagCategoryInput" required></select>
+        </div>
+        <div style="display:grid; grid-template-columns: 80px 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Emoji</label>
+            <input type="text" class="form-input" id="tagIconInput" value="✨" maxlength="4" style="text-align:center;" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tag Label</label>
+            <input type="text" class="form-input" id="tagNameInput" placeholder="e.g., Glowing, Eczema, Frizzy..." required />
+          </div>
+        </div>
+        <button type="submit" class="btn-block primary">Save Tag</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Step Detail & History Modal -->
+  <div class="modal-backdrop" id="detailModal">
+    <div class="modal-sheet" id="detailModalBody"></div>
+  </div>
+
+  <!-- Hidden File Input for JSON Import -->
+  <input type="file" id="importFileInput" accept=".json,application/json" style="display:none;" />
+
+  <script>
+    (function () {
+      'use strict';
+
+      const STORAGE_KEY = 'carelog_pwa_data_v2';
+      const LEGACY_KEY = 'carelog_pwa_data_v1';
+
+      const PALETTE = [
+        '#E87A90', // Rose
+        '#6C8AE4', // Periwinkle
+        '#47A896', // Sage Teal
+        '#9B72CF', // Lavender
+        '#E09132', // Warm Amber
+        '#3B9AE1', // Sky Blue
+        '#D96B6B', // Coral
+        '#5AA469', // Botanical Green
+        '#C973A8', // Berry
+        '#5C6B73'  // Slate
+      ];
+
+      // --- Date Helpers (Strictly Local Timezone YYYY-MM-DD) ---
+      function toLocalDateStr(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      function parseLocalDate(str) {
+        const [y, m, d] = str.split('-').map(Number);
+        return new Date(y, m - 1, d);
+      }
+
+      function addDays(date, days) {
+        const copy = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        copy.setDate(copy.getDate() + days);
+        return copy;
+      }
+
+      function diffDays(dateStrA, dateStrB) {
+        const a = parseLocalDate(dateStrA);
+        const b = parseLocalDate(dateStrB);
+        return Math.round((b - a) / 86400000);
+      }
+
+      function formatDisplayDate(dateStr) {
+        const d = parseLocalDate(dateStr);
+        return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      }
+
+      function formatExportTimestamp(isoStr) {
+        if (!isoStr) return 'Not exported yet';
+        const d = new Date(isoStr);
+        if (isNaN(d.getTime())) return 'Not exported yet';
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+          ' at ' +
+          d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      }
+
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      // --- Starter Sample Data Generator (60 days anchored to Today) ---
+      function buildSampleData() {
+        const today = new Date();
+        const genLogs = (entries) => {
+          const map = new Map();
+          entries.forEach((entry) => {
+            const off = typeof entry === 'number' ? entry : entry.off;
+            const product = typeof entry === 'number' ? '' : (entry.product || '');
+            if (off >= 0) {
+              const dStr = toLocalDateStr(addDays(today, -off));
+              map.set(dStr, { date: dStr, product });
+            }
+          });
+          return Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
+        };
+
+        const dOffset = (off) => toLocalDateStr(addDays(today, -off));
+
+        return {
+          version: 2,
+          lastExported: null,
+          categories: [
+            { id: 'cat_skin', name: 'Skincare', icon: '✨', color: '#E87A90', order: 0 },
+            { id: 'cat_hair', name: 'Haircare', icon: '🪮', color: '#6C8AE4', order: 1 },
+            { id: 'cat_body', name: 'Bodycare', icon: '🧴', color: '#47A896', order: 2 },
+            { id: 'cat_laser', name: 'Home Laser', icon: '⚡', color: '#9B72CF', order: 3 }
+          ],
+          tags: [
+            { id: 'tag_glow', categoryId: 'cat_skin', name: 'Glowing', icon: '✨' },
+            { id: 'tag_dry_skin', categoryId: 'cat_skin', name: 'Dry / Tight', icon: '🌵' },
+            { id: 'tag_acne', categoryId: 'cat_skin', name: 'Breakout', icon: '🔴' },
+            { id: 'tag_eczema', categoryId: 'cat_skin', name: 'Eczema Flare', icon: '🩹' },
+            { id: 'tag_good_hair', categoryId: 'cat_hair', name: 'Good Hair Day', icon: '💇‍♀️' },
+            { id: 'tag_frizzy', categoryId: 'cat_hair', name: 'Frizzy', icon: '🦁' },
+            { id: 'tag_smooth_body', categoryId: 'cat_body', name: 'Silky Smooth', icon: '🫧' }
+          ],
+          dayTags: {
+            [dOffset(0)]: ['tag_glow', 'tag_good_hair'],
+            [dOffset(2)]: ['tag_dry_skin'],
+            [dOffset(4)]: ['tag_good_hair', 'tag_smooth_body'],
+            [dOffset(6)]: ['tag_glow'],
+            [dOffset(9)]: ['tag_acne'],
+            [dOffset(11)]: ['tag_frizzy'],
+            [dOffset(14)]: ['tag_glow', 'tag_good_hair'],
+            [dOffset(18)]: ['tag_dry_skin'],
+            [dOffset(21)]: ['tag_glow', 'tag_smooth_body'],
+            [dOffset(26)]: ['tag_eczema'],
+            [dOffset(30)]: ['tag_good_hair']
+          },
+          items: [
+            {
+              id: 'step_1',
+              categoryId: 'cat_skin',
+              name: 'Cleanser & Moisturizer',
+              icon: '🫧',
+              color: '#E87A90',
+              cadenceDays: 1,
+              stripMode: '14d',
+              currentProduct: 'CeraVe Hydrating Cleanser + Cicaplast',
+              notes: 'Core daily hydration step',
+              logs: genLogs(
+                [0,1,2,3,4,6,7,8,9,10,11,13,14,15,16,17,18,19,21,22,23,24,25,27,28,29,30,32,33,34,35,36,38,39,40,42,43,44,45,47,48,49,50,52,53,55,56,58].map((off) => ({
+                  off,
+                  product: off <= 25 ? 'CeraVe Hydrating Cleanser + Cicaplast' : 'La Roche-Posay Toleriane Cleanser'
+                }))
+              ),
+              order: 0
+            },
+            {
+              id: 'step_2',
+              categoryId: 'cat_skin',
+              name: 'Retinol 0.5% Serum',
+              icon: '🌙',
+              color: '#C973A8',
+              cadenceDays: 3,
+              stripMode: '14d',
+              currentProduct: 'La Roche-Posay Retinol B3',
+              notes: 'Apply on dry skin, buffer with moisturizer',
+              logs: genLogs(
+                [3, 6, 9, 13, 16, 19, 23, 26, 30, 33, 37, 41, 45, 49, 53, 57].map((off) => ({
+                  off,
+                  product: off <= 20 ? 'La Roche-Posay Retinol B3' : 'The Ordinary Retinol 0.5% in Squalane'
+                }))
+              ),
+              order: 1
+            },
+            {
+              id: 'step_3',
+              categoryId: 'cat_skin',
+              name: 'AHA/BHA Exfoliating Toner',
+              icon: '💧',
+              color: '#D96B6B',
+              cadenceDays: 7,
+              stripMode: '12w',
+              currentProduct: 'Paula’s Choice 2% BHA Liquid',
+              notes: 'Skip retinol on exfoliation nights',
+              logs: genLogs([4, 11, 19, 26, 34, 41, 49, 57].map((off) => ({ off, product: 'Paula’s Choice 2% BHA Liquid' }))),
+              order: 2
+            },
+            {
+              id: 'step_4',
+              categoryId: 'cat_hair',
+              name: 'Wash & Conditioner',
+              icon: '🚿',
+              color: '#6C8AE4',
+              cadenceDays: 3,
+              stripMode: '14d',
+              currentProduct: 'Kérastase Nutritive Bain Satin',
+              notes: 'Double shampoo scalp, condition mids to ends',
+              logs: genLogs([1, 4, 7, 10, 14, 17, 20, 23, 27, 30, 33, 37, 40, 43, 47, 50, 54, 57].map((off) => ({ off, product: 'Kérastase Nutritive Bain Satin' }))),
+              order: 0
+            },
+            {
+              id: 'step_5',
+              categoryId: 'cat_hair',
+              name: 'Scalp Oil & Detangling',
+              icon: '🌿',
+              color: '#5AA469',
+              cadenceDays: 4,
+              stripMode: '14d',
+              currentProduct: '',
+              notes: '10-min scalp massage before wash day',
+              logs: genLogs([1, 7, 14, 20, 27, 33, 40, 47, 54]),
+              order: 1
+            },
+            {
+              id: 'step_6',
+              categoryId: 'cat_hair',
+              name: 'Deep Repair Hair Mask',
+              icon: '🥥',
+              color: '#3B9AE1',
+              cadenceDays: 7,
+              stripMode: '12w',
+              currentProduct: 'Olaplex No. 8 Bond Intense Mask',
+              notes: '15 mins with warm towel',
+              logs: genLogs([4, 10, 17, 23, 30, 37, 43, 50, 57].map((off) => ({ off, product: 'Olaplex No. 8 Bond Intense Mask' }))),
+              order: 2
+            },
+            {
+              id: 'step_7',
+              categoryId: 'cat_body',
+              name: 'Rich Body Lotion',
+              icon: '🧴',
+              color: '#47A896',
+              cadenceDays: 2,
+              stripMode: '14d',
+              currentProduct: 'Eucerin Advanced Repair Cream',
+              notes: 'Apply right after shower while damp',
+              logs: genLogs([0, 2, 4, 6, 8, 10, 12, 14, 16, 19, 21, 23, 25, 28, 30, 32, 35, 37, 39, 42, 44, 46, 49, 51, 54, 56, 58].map((off) => ({ off, product: 'Eucerin Advanced Repair Cream' }))),
+              order: 0
+            },
+            {
+              id: 'step_8',
+              categoryId: 'cat_body',
+              name: 'Coffee & Sugar Body Scrub',
+              icon: '✨',
+              color: '#E09132',
+              cadenceDays: 7,
+              stripMode: '12w',
+              currentProduct: 'Tree Hut Shea Sugar Scrub',
+              notes: 'Exfoliate before moisturizing or IPL',
+              logs: genLogs([3, 10, 17, 24, 31, 38, 45, 52, 59].map((off) => ({ off, product: 'Tree Hut Shea Sugar Scrub' }))),
+              order: 1
+            },
+            {
+              id: 'step_9',
+              categoryId: 'cat_laser',
+              name: 'IPL Full Legs & Underarms',
+              icon: '⚡',
+              color: '#9B72CF',
+              cadenceDays: 14,
+              stripMode: '12w',
+              currentProduct: 'Braun Silk-expert Pro 5 (Level 4)',
+              notes: 'Shave 12-24h prior',
+              logs: genLogs([2, 16, 30, 44, 58].map((off) => ({ off, product: 'Braun Silk-expert Pro 5 (Level 4)' }))),
+              order: 0
+            }
+          ]
+        };
+      }
+
+      // --- Schema Normalization & Migration ---
+      function normalizeData(raw) {
+        if (!raw || !Array.isArray(raw.categories) || !Array.isArray(raw.items)) {
+          throw new Error('Invalid schema');
+        }
+        const categories = raw.categories.map((c, idx) => ({
+          id: c.id || 'cat_' + idx,
+          name: c.name || 'List',
+          icon: c.icon || '✨',
+          color: c.color || PALETTE[idx % PALETTE.length],
+          order: typeof c.order === 'number' ? c.order : idx
+        }));
+
+        const items = raw.items.map((it, idx) => {
+          const cadenceDays = Number(it.cadenceDays) || 0;
+          const defaultStrip = cadenceDays >= 7 ? '12w' : '14d';
+          const normalizedLogs = Array.isArray(it.logs)
+            ? it.logs.map((entry) => {
+                if (typeof entry === 'string') return { date: entry, product: '' };
+                return { date: entry.date, product: entry.product || '' };
+              }).filter((e) => e && e.date).sort((a, b) => a.date.localeCompare(b.date))
+            : [];
+
+          return {
+            id: it.id || 'step_' + idx,
+            categoryId: it.categoryId,
+            name: it.name || 'Step',
+            icon: it.icon || '✨',
+            color: it.color || PALETTE[idx % PALETTE.length],
+            cadenceDays,
+            stripMode: it.stripMode === '12w' || it.stripMode === '14d' ? it.stripMode : defaultStrip,
+            currentProduct: it.currentProduct || '',
+            notes: it.notes || '',
+            logs: normalizedLogs,
+            order: typeof it.order === 'number' ? it.order : idx
+          };
+        });
+
+        const tags = Array.isArray(raw.tags)
+          ? raw.tags.map((t, idx) => ({
+              id: t.id || 'tag_' + idx,
+              categoryId: t.categoryId,
+              name: t.name || 'Tag',
+              icon: t.icon || '🏷️'
+            }))
+          : [];
+
+        const dayTags = raw.dayTags && typeof raw.dayTags === 'object' ? raw.dayTags : {};
+        const lastExported = raw.lastExported || null;
+
+        return { version: 2, lastExported, categories, items, tags, dayTags };
+      }
+
+      function loadData() {
+        try {
+          const rawV2 = localStorage.getItem(STORAGE_KEY);
+          if (rawV2) return normalizeData(JSON.parse(rawV2));
+          const rawV1 = localStorage.getItem(LEGACY_KEY);
+          if (rawV1) {
+            const migrated = normalizeData(JSON.parse(rawV1));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+            return migrated;
+          }
+          const sample = buildSampleData();
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(sample));
+          return sample;
+        } catch (e) {
+          const sample = buildSampleData();
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(sample));
+          return sample;
+        }
+      }
+
+      let db = loadData();
+      const todayStr = () => toLocalDateStr(new Date());
+
+      const state = {
+        activeTab: 'today',
+        todayCategoryFilter: 'all', // 'all' | 'due' | categoryId
+        analyticsCategoryFilter: 'all',
+        analyticsSelectedSteps: [], // [] means ALL steps in current category filter
+        stepDrawerOpen: false,
+        highlightedTagId: null,
+        calYear: new Date().getFullYear(),
+        calMonth: new Date().getMonth(),
+        selectedDate: todayStr(),
+        editingPastProductStepId: null,
+        inlineTagFormOpen: false,
+        detailSwitchingProduct: false,
+        modalStripMode: '14d',
+        selectedStepColor: PALETTE[0],
+        selectedCatColor: PALETTE[0]
+      };
+
+      function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+      }
+
+      function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(el._timer);
+        el._timer = setTimeout(() => el.classList.remove('show'), 2100);
+      }
+
+      function getLogEntry(item, dateStr) {
+        return item.logs.find((l) => l.date === dateStr) || null;
+      }
+
+      function hasLog(item, dateStr) {
+        return item.logs.some((l) => l.date === dateStr);
+      }
+
+      function toggleLog(stepId, dateStr) {
+        const item = db.items.find((i) => i.id === stepId);
+        if (!item) return;
+        const idx = item.logs.findIndex((l) => l.date === dateStr);
+        if (idx >= 0) {
+          item.logs.splice(idx, 1);
+          if (state.editingPastProductStepId === stepId) {
+            state.editingPastProductStepId = null;
+          }
+          showToast(`Removed ${item.name} (${formatDisplayDate(dateStr)})`);
+        } else {
+          item.logs.push({ date: dateStr, product: item.currentProduct || '' });
+          item.logs.sort((a, b) => a.date.localeCompare(b.date));
+          showToast(`Logged ${item.name} ✓`);
+        }
+        saveData();
+        render();
+      }
+
+      function updateLogProduct(stepId, dateStr, newProduct) {
+        const item = db.items.find((i) => i.id === stepId);
+        if (!item) return;
+        const entry = getLogEntry(item, dateStr);
+        if (entry) {
+          entry.product = newProduct.trim();
+          saveData();
+          showToast('Updated product for ' + formatDisplayDate(dateStr));
+        }
+      }
+
+      function getPreviousProducts(item) {
+        const seen = new Set();
+        const list = [];
+        if (item.currentProduct && item.currentProduct.trim()) {
+          seen.add(item.currentProduct.trim());
+          list.push(item.currentProduct.trim());
+        }
+        for (let i = item.logs.length - 1; i >= 0; i--) {
+          const p = (item.logs[i].product || '').trim();
+          if (p && !seen.has(p)) {
+            seen.add(p);
+            list.push(p);
+          }
+        }
+        return list;
+      }
+
+      function toggleDayTag(dateStr, tagId) {
+        if (!db.dayTags[dateStr]) db.dayTags[dateStr] = [];
+        const arr = db.dayTags[dateStr];
+        const idx = arr.indexOf(tagId);
+        if (idx >= 0) {
+          arr.splice(idx, 1);
+          if (arr.length === 0) delete db.dayTags[dateStr];
+        } else {
+          arr.push(tagId);
+        }
+        saveData();
+        render();
+      }
+
+      // --- Analytics & Status Helpers ---
+      function getCadenceLabel(days) {
+        if (!days || days === 0) return '';
+        if (days === 1) return 'Daily';
+        if (days === 7) return 'Weekly';
+        if (days === 14) return 'Every 2w';
+        if (days === 30) return 'Monthly';
+        return `Every ${days}d`;
+      }
+
+      function getStepStatus(item) {
+        const t = todayStr();
+        const doneToday = hasLog(item, t);
+        const sortedDates = item.logs.map((l) => l.date).sort();
+        const lastDate = sortedDates.length ? sortedDates[sortedDates.length - 1] : null;
+        const daysSince = lastDate ? diffDays(lastDate, t) : null;
+
+        let lastText = 'Never logged';
+        if (daysSince === 0) lastText = 'Done today';
+        else if (daysSince === 1) lastText = 'Yesterday';
+        else if (daysSince !== null) lastText = `${daysSince}d ago`;
+
+        const isDue = !doneToday && item.cadenceDays > 0 && (daysSince === null || daysSince >= item.cadenceDays);
+        return { doneToday, lastDate, daysSince, lastText, isDue };
+      }
+
+      function computeAverageInterval(logs) {
+        if (!logs || logs.length < 2) return null;
+        const sorted = [...new Set(logs.map((l) => l.date))].sort();
+        if (sorted.length < 2) return null;
+        let totalGap = 0;
+        for (let i = 1; i < sorted.length; i++) {
+          totalGap += diffDays(sorted[i - 1], sorted[i]);
+        }
+        return (totalGap / (sorted.length - 1)).toFixed(1);
+      }
+
+      function buildCardStripHtml(item, today, tStr) {
+        const logDateSet = new Set(item.logs.map((l) => l.date));
+        if (item.stripMode === '12w') {
+          const dayOfWeekMon = (today.getDay() + 6) % 7;
+          const currentWeekStart = addDays(today, -dayOfWeekMon);
+          const weeks = [];
+          for (let w = 11; w >= 0; w--) {
+            const wStart = addDays(currentWeekStart, -w * 7);
+            let doneInWeek = false;
+            for (let d = 0; d < 7; d++) {
+              if (logDateSet.has(toLocalDateStr(addDays(wStart, d)))) {
+                doneInWeek = true;
+                break;
+              }
+            }
+            weeks.push({ done: doneInWeek, isCurrent: w === 0 });
+          }
+          const activeWeeks = weeks.filter((wk) => wk.done).length;
+          return `
+            <div class="mini-strip cols-12">
+              ${weeks.map((wk) => `<div class="mini-dot ${wk.isCurrent ? 'today-ring' : ''}" style="${wk.done ? `background:${item.color};` : ''}"></div>`).join('')}
+            </div>
+            <span class="mini-strip-label">${activeWeeks}/12w</span>
+          `;
+        } else {
+          const last14 = [];
+          for (let i = 13; i >= 0; i--) {
+            last14.push(toLocalDateStr(addDays(today, -i)));
+          }
+          const recentCount = last14.filter((d) => logDateSet.has(d)).length;
+          return `
+            <div class="mini-strip cols-14">
+              ${last14.map((d) => {
+                const active = logDateSet.has(d);
+                const isT = d === tStr;
+                return `<div class="mini-dot ${isT ? 'today-ring' : ''}" style="${active ? `background:${item.color};` : ''}"></div>`;
+              }).join('')}
+            </div>
+            <span class="mini-strip-label">${recentCount}/14d</span>
+          `;
+        }
+      }
+
+      // --- Render Router ---
+      function render() {
+        const headerTitle = document.getElementById('headerTitle');
+        const headerSubtitle = document.getElementById('headerSubtitle');
+        const headerActionBtn = document.getElementById('headerActionBtn');
+        const main = document.getElementById('mainContent');
+
+        document.querySelectorAll('.nav-tab').forEach((btn) => {
+          btn.classList.toggle('active', btn.dataset.tab === state.activeTab);
+        });
+
+        if (state.activeTab === 'today') {
+          const t = todayStr();
+          const loggedTodayCount = db.items.filter((i) => hasLog(i, t)).length;
+          headerTitle.textContent = 'Routines';
+          headerSubtitle.textContent = `${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} · ${loggedTodayCount} done today`;
+          headerActionBtn.style.display = 'inline-flex';
+          headerActionBtn.textContent = '+ Add Step';
+          headerActionBtn.dataset.action = 'open-step-modal';
+          main.innerHTML = renderTodayView();
+        } else if (state.activeTab === 'analytics') {
+          headerTitle.textContent = 'Analytics';
+          headerSubtitle.textContent = 'History, monthly calendar & rhythm';
+          headerActionBtn.style.display = 'none';
+          main.innerHTML = renderAnalyticsView();
+        } else {
+          headerTitle.textContent = 'Lists & Data';
+          headerSubtitle.textContent = `${db.categories.length} lists · ${db.items.length} steps`;
+          headerActionBtn.style.display = 'inline-flex';
+          headerActionBtn.textContent = '+ New List';
+          headerActionBtn.dataset.action = 'open-category-modal';
+          main.innerHTML = renderManageView();
+        }
+      }
+
+      // --- View 1: Today / Routines ---
+      function renderTodayView() {
+        const sortedCats = [...db.categories].sort((a, b) => a.order - b.order);
+        if (
+          state.todayCategoryFilter !== 'all' &&
+          state.todayCategoryFilter !== 'due' &&
+          !sortedCats.some((c) => c.id === state.todayCategoryFilter)
+        ) {
+          state.todayCategoryFilter = 'all';
+        }
+
+        const dueCount = db.items.filter((i) => getStepStatus(i).isDue).length;
+
+        const pillsHtml = `
+          <div class="pill-scroller">
+            <button class="filter-pill due-pill ${state.todayCategoryFilter === 'due' ? 'active' : ''}" data-action="filter-today" data-cat="due">
+              <span>⏰ Due</span>
+              <span>(${dueCount})</span>
+            </button>
+            <button class="filter-pill ${state.todayCategoryFilter === 'all' ? 'active' : ''}" data-action="filter-today" data-cat="all">
+              All (${db.items.length})
+            </button>
+            ${sortedCats.map((cat) => {
+              const count = db.items.filter((i) => i.categoryId === cat.id).length;
+              return `
+                <button class="filter-pill ${state.todayCategoryFilter === cat.id ? 'active' : ''}" data-action="filter-today" data-cat="${cat.id}">
+                  <span>${escapeHtml(cat.icon)}</span>
+                  <span>${escapeHtml(cat.name)}</span>
+                  <span style="opacity:0.65;">${count}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        `;
+
+        const visibleCats = (state.todayCategoryFilter === 'all' || state.todayCategoryFilter === 'due')
+          ? sortedCats
+          : sortedCats.filter((c) => c.id === state.todayCategoryFilter);
+
+        if (visibleCats.length === 0) {
+          return pillsHtml + `<div class="empty-state">No lists yet. Go to <strong>Lists & Data</strong> to create one.</div>`;
+        }
+
+        const today = new Date();
+        const tStr = toLocalDateStr(today);
+        let totalRenderedSteps = 0;
+
+        const sectionsHtml = visibleCats.map((cat) => {
+          let catItems = db.items
+            .filter((i) => i.categoryId === cat.id)
+            .sort((a, b) => a.order - b.order);
+
+          if (state.todayCategoryFilter === 'due') {
+            catItems = catItems.filter((i) => getStepStatus(i).isDue);
+            if (catItems.length === 0) return '';
+          }
+
+          totalRenderedSteps += catItems.length;
+
+          const cardsHtml = catItems.length === 0
+            ? `<div class="empty-state" style="padding:18px; background:var(--surface); border-radius:14px; border:1px dashed var(--border);">No steps in ${escapeHtml(cat.name)} yet.</div>`
+            : catItems.map((item) => {
+                const status = getStepStatus(item);
+                const cadenceText = getCadenceLabel(item.cadenceDays);
+                const activeProd = (item.currentProduct || '').trim();
+
+                return `
+                  <div class="step-card ${status.doneToday ? 'done-today' : ''}">
+                    <div class="step-card-top">
+                      <div class="step-info" data-action="open-detail" data-step-id="${item.id}">
+                        <div class="step-icon-box" style="background:${item.color}1F;">
+                          ${escapeHtml(item.icon)}
+                        </div>
+                        <div class="step-text">
+                          <div class="step-name">${escapeHtml(item.name)}</div>
+                          ${activeProd ? `<div class="step-product-sub">🧴 ${escapeHtml(activeProd)}</div>` : ''}
+                          <div class="step-meta">
+                            ${status.doneToday
+                              ? `<span class="badge badge-done">Done today</span>`
+                              : status.isDue
+                                ? `<span class="badge badge-due">Due · ${status.lastText}</span>`
+                                : `<span>${status.lastText}</span>`
+                            }
+                            ${cadenceText ? `<span class="badge badge-neutral">${cadenceText}</span>` : ''}
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        class="check-btn ${status.doneToday ? 'checked' : ''}"
+                        style="${status.doneToday ? `background:${item.color};` : ''}"
+                        data-action="toggle-today"
+                        data-step-id="${item.id}"
+                        aria-label="Toggle ${escapeHtml(item.name)}"
+                      >✓</button>
+                    </div>
+                    <div class="mini-strip-wrap" data-action="open-detail" data-step-id="${item.id}">
+                      ${buildCardStripHtml(item, today, tStr)}
+                    </div>
+                  </div>
+                `;
+              }).join('');
+
+          return `
+            <section class="category-section">
+              <div class="category-header">
+                <div class="category-title-wrap">
+                  <span class="category-dot" style="background:${cat.color};"></span>
+                  <h2 class="category-name">${escapeHtml(cat.icon)} ${escapeHtml(cat.name)}</h2>
+                  <span class="category-count">${catItems.length}</span>
+                </div>
+                <button class="category-add-btn" data-action="open-step-modal" data-cat-id="${cat.id}">+ Step</button>
+              </div>
+              <div class="step-list">${cardsHtml}</div>
+            </section>
+          `;
+        }).join('');
+
+        if (state.todayCategoryFilter === 'due' && totalRenderedSteps === 0) {
+          return pillsHtml + `<div class="empty-state">🎉 All caught up! Nothing is due today.</div>`;
+        }
+
+        return pillsHtml + sectionsHtml;
+      }
+
+      // --- View 2: Analytics & Monthly Calendar ---
+      function renderAnalyticsView() {
+        const sortedCats = [...db.categories].sort((a, b) => a.order - b.order);
+        if (state.analyticsCategoryFilter !== 'all' && !sortedCats.some((c) => c.id === state.analyticsCategoryFilter)) {
+          state.analyticsCategoryFilter = 'all';
+        }
+
+        const availableSteps = db.items
+          .filter((i) => state.analyticsCategoryFilter === 'all' || i.categoryId === state.analyticsCategoryFilter)
+          .sort((a, b) => {
+            const catA = sortedCats.findIndex((c) => c.id === a.categoryId);
+            const catB = sortedCats.findIndex((c) => c.id === b.categoryId);
+            return catA !== catB ? catA - catB : a.order - b.order;
+          });
+
+        // Clean any selected step IDs that are no longer in availableSteps
+        const availIdSet = new Set(availableSteps.map((s) => s.id));
+        state.analyticsSelectedSteps = state.analyticsSelectedSteps.filter((id) => availIdSet.has(id));
+
+        const isMultiFiltered = state.analyticsSelectedSteps.length > 0;
+        const scopedItems = isMultiFiltered
+          ? availableSteps.filter((s) => state.analyticsSelectedSteps.includes(s.id))
+          : availableSteps;
+
+        const singleStep = scopedItems.length === 1 ? scopedItems[0] : null;
+        const activeColor = singleStep
+          ? singleStep.color
+          : state.analyticsCategoryFilter !== 'all'
+            ? (sortedCats.find((c) => c.id === state.analyticsCategoryFilter)?.color || '#E87A90')
+            : '#E87A90';
+
+        // Trigger label for Multi-Step Drawer
+        let drawerLabel = `Steps: All (${availableSteps.length})`;
+        if (isMultiFiltered) {
+          if (scopedItems.length === 1) {
+            drawerLabel = `${scopedItems[0].icon} ${scopedItems[0].name}`;
+          } else if (scopedItems.length === 2) {
+            drawerLabel = `${scopedItems[0].name} + ${scopedItems[1].name}`;
+          } else {
+            drawerLabel = `${scopedItems.length} steps selected`;
+          }
+        }
+
+        // Month boundaries
+        const monthPrefix = `${state.calYear}-${String(state.calMonth + 1).padStart(2, '0')}`;
+        const monthLabel = new Date(state.calYear, state.calMonth, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+        // Compute Monthly Logs
+        let monthTotalLogs = 0;
+        const activeDaysSet = new Set();
+        const allScopedDates = [];
+
+        scopedItems.forEach((item) => {
+          item.logs.forEach((entry) => {
+            allScopedDates.push(entry.date);
+            if (entry.date.startsWith(monthPrefix)) {
+              monthTotalLogs++;
+              activeDaysSet.add(entry.date);
+            }
+          });
+        });
+
+        const sortedAllDates = [...allScopedDates].sort();
+        const lastEver = sortedAllDates.length ? sortedAllDates[sortedAllDates.length - 1] : null;
+        const lastEverText = lastEver
+          ? (diffDays(lastEver, todayStr()) === 0 ? 'Today' : diffDays(lastEver, todayStr()) === 1 ? 'Yesterday' : `${diffDays(lastEver, todayStr())}d ago`)
+          : '—';
+
+        const thirdKpiLabel = singleStep ? 'Avg. Frequency' : 'Total All-Time';
+        const thirdKpiValue = singleStep
+          ? (computeAverageInterval(singleStep.logs) ? `Every ${computeAverageInterval(singleStep.logs)}d` : 'Need 2+ logs')
+          : `${allScopedDates.length}`;
+        const thirdKpiSub = singleStep
+          ? (singleStep.cadenceDays ? `Target: ${getCadenceLabel(singleStep.cadenceDays)}` : 'Flexible cadence')
+          : 'Total check-ins';
+
+        // Relevant Check-In Tags for current category filter
+        const relevantTags = db.tags.filter(
+          (t) => state.analyticsCategoryFilter === 'all' || t.categoryId === state.analyticsCategoryFilter
+        );
+        if (state.highlightedTagId && !relevantTags.some((t) => t.id === state.highlightedTagId)) {
+          state.highlightedTagId = null;
+        }
+
+        // Build Monthly Calendar Cells (Monday-start)
+        const firstOfMonth = new Date(state.calYear, state.calMonth, 1);
+        const startOffset = (firstOfMonth.getDay() + 6) % 7;
+        const daysInMonth = new Date(state.calYear, state.calMonth + 1, 0).getDate();
+        const tStr = todayStr();
+
+        const logsByDate = {};
+        scopedItems.forEach((item) => {
+          item.logs.forEach((entry) => {
+            if (!logsByDate[entry.date]) logsByDate[entry.date] = [];
+            logsByDate[entry.date].push(item);
+          });
+        });
+
+        let calCellsHtml = '';
+        for (let i = 0; i < startOffset; i++) {
+          calCellsHtml += `<div class="cal-cell empty"></div>`;
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dStr = `${monthPrefix}-${String(day).padStart(2, '0')}`;
+          const completed = logsByDate[dStr] || [];
+          const count = completed.length;
+          const isSelected = dStr === state.selectedDate;
+          const isToday = dStr === tStr;
+          const dayTagIds = db.dayTags[dStr] || [];
+          const isTagHighlighted = state.highlightedTagId && dayTagIds.includes(state.highlightedTagId);
+
+          let cellStyle = '';
+          let numStyle = '';
+          if (singleStep && count > 0) {
+            cellStyle = `background:${singleStep.color};`;
+            numStyle = `color:#FFFFFF;`;
+          } else if (count > 0) {
+            const alpha = Math.min(0.14 + count * 0.12, 0.55);
+            cellStyle = `background:rgba(232, 122, 144, ${alpha});`;
+            if (state.analyticsCategoryFilter !== 'all') {
+              cellStyle = `background:${activeColor}2B;`;
+            } else if (isMultiFiltered) {
+              cellStyle = `background:rgba(26, 29, 38, 0.07);`;
+            }
+          }
+
+          const dotsHtml = !singleStep && count > 0
+            ? `<div class="cal-dots">${completed.slice(0, 4).map((it) => `<span class="cal-dot" style="background:${it.color};"></span>`).join('')}</div>`
+            : `<div class="cal-dots"></div>`;
+
+          const tagCornerHtml = dayTagIds.length > 0 && !singleStep
+            ? `<span class="cal-tag-badge">•</span>`
+            : '';
+
+          calCellsHtml += `
+            <div
+              class="cal-cell ${isSelected ? 'selected' : ''} ${isToday ? 'is-today' : ''} ${isTagHighlighted ? 'tag-highlighted' : ''}"
+              style="${cellStyle}"
+              data-action="cal-select-day"
+              data-date="${dStr}"
+            >
+              ${tagCornerHtml}
+              <span class="cal-day-num" style="${numStyle}">${day}</span>
+              ${dotsHtml}
+            </div>
+          `;
+        }
+
+        // Day Inspector: Tags + 3-Zone Step Rows
+        const selectedDayTagIds = new Set(db.dayTags[state.selectedDate] || []);
+        const inlineTagCatOptions = sortedCats.map((c) => `<option value="${c.id}" ${c.id === state.analyticsCategoryFilter ? 'selected' : ''}>${escapeHtml(c.icon)} ${escapeHtml(c.name)}</option>`).join('');
+
+        const tagsSectionHtml = `
+          <div class="day-tags-box">
+            <div class="day-tags-label">
+              <span>Skin / Hair Check-In Tags</span>
+              <span>${selectedDayTagIds.size > 0 ? `${selectedDayTagIds.size} active` : 'Optional'}</span>
+            </div>
+            <div class="day-tags-wrap">
+              ${relevantTags.map((tag) => {
+                const isOn = selectedDayTagIds.has(tag.id);
+                return `
+                  <button
+                    type="button"
+                    class="checkin-tag-pill ${isOn ? 'active' : ''}"
+                    data-action="toggle-day-tag"
+                    data-date="${state.selectedDate}"
+                    data-tag-id="${tag.id}"
+                  >
+                    <span>${escapeHtml(tag.icon)}</span>
+                    <span>${escapeHtml(tag.name)}</span>
+                  </button>
+                `;
+              }).join('')}
+              <button type="button" class="checkin-tag-pill add-tag-btn" data-action="toggle-inline-tag-form">
+                ${state.inlineTagFormOpen ? '✕ Cancel' : '+ Tag'}
+              </button>
+            </div>
+            ${state.inlineTagFormOpen ? `
+              <form class="inline-tag-form" id="inlineTagForm">
+                ${state.analyticsCategoryFilter === 'all' ? `
+                  <select class="form-input" id="inlineTagCatInput" style="padding:8px 10px;">
+                    ${inlineTagCatOptions}
+                  </select>
+                ` : `<input type="hidden" id="inlineTagCatInput" value="${state.analyticsCategoryFilter}" />`}
+                <div class="inline-tag-row">
+                  <input type="text" class="form-input" id="inlineTagIconInput" value="✨" maxlength="4" style="width:54px; text-align:center; padding:8px 4px;" />
+                  <input type="text" class="form-input" id="inlineTagNameInput" placeholder="New tag (e.g., Haircut, Humid...)" required style="padding:8px 10px;" />
+                  <button type="submit" class="btn-primary-sm" style="border-radius:10px; padding:0 14px;">Add</button>
+                </div>
+              </form>
+            ` : ''}
+          </div>
+        `;
+
+        const retroRowsHtml = scopedItems.map((it) => {
+          const logEntry = getLogEntry(it, state.selectedDate);
+          const isLogged = Boolean(logEntry);
+          const loggedProd = logEntry ? (logEntry.product || '').trim() : '';
+          const prevProds = getPreviousProducts(it);
+          const hasAnyProductHistory = prevProds.length > 0;
+          const isEditingThisProd = isLogged && state.editingPastProductStepId === it.id;
+
+          // Only show product sub-note if logged AND either a product was recorded OR this step uses products
+          let productSubHtml = '';
+          if (isLogged && (loggedProd || hasAnyProductHistory)) {
+            productSubHtml = `
+              <div class="retro-product-sub" data-action="open-past-product-edit" data-step-id="${it.id}">
+                <span>${loggedProd ? `🧴 ${escapeHtml(loggedProd)}` : '+ Add product used'}</span>
+                <span style="opacity:0.65;">✎</span>
+              </div>
+            `;
+          }
+
+          return `
+            <div class="retro-row ${isLogged ? 'logged' : ''}">
+              <div class="retro-main-zone">
+                <span class="retro-icon" data-action="open-detail" data-step-id="${it.id}">${escapeHtml(it.icon)}</span>
+                <div class="retro-text-col">
+                  <div class="retro-step-name" data-action="open-detail" data-step-id="${it.id}">${escapeHtml(it.name)}</div>
+                  ${productSubHtml}
+                  ${isEditingThisProd ? `
+                    <div class="past-product-editor">
+                      <div style="display:flex; gap:6px;">
+                        <input
+                          type="text"
+                          class="form-input"
+                          id="pastProdInput_${it.id}"
+                          value="${escapeHtml(loggedProd)}"
+                          placeholder="Product used on this date..."
+                          style="padding:7px 9px;"
+                        />
+                        <button type="button" class="btn-primary-sm" style="border-radius:9px;" data-action="save-past-product" data-step-id="${it.id}" data-date="${state.selectedDate}">Save</button>
+                      </div>
+                      ${prevProds.length > 0 ? `
+                        <div class="quick-pick-pills">
+                          ${prevProds.map((p) => `
+                            <button type="button" class="quick-pick-pill" data-action="pick-past-product" data-step-id="${it.id}" data-date="${state.selectedDate}" data-product="${escapeHtml(p)}">
+                              ${escapeHtml(p)}
+                            </button>
+                          `).join('')}
+                        </div>
+                      ` : ''}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+              <button
+                type="button"
+                class="retro-check-btn ${isLogged ? 'checked' : ''}"
+                style="${isLogged ? `background:${it.color};` : ''}"
+                data-action="retro-toggle"
+                data-step-id="${it.id}"
+                data-date="${state.selectedDate}"
+                aria-label="Toggle ${escapeHtml(it.name)}"
+              >✓</button>
+            </div>
+          `;
+        }).join('');
+
+        // Dynamic Breakdown Bar Chart (Selected Steps Comparison OR Category/List Balance)
+        let breakdownHtml = '';
+        if (isMultiFiltered && scopedItems.length >= 2) {
+          const stepStats = scopedItems.map((it) => ({
+            it,
+            count: it.logs.filter((l) => l.date.startsWith(monthPrefix)).length
+          }));
+          const maxCount = Math.max(...stepStats.map((s) => s.count), 1);
+
+          breakdownHtml = `
+            <div class="card">
+              <h3 class="card-title">Selected Steps Comparison (${monthLabel})</h3>
+              ${stepStats.map(({ it, count }) => {
+                const pct = Math.round((count / maxCount) * 100);
+                return `
+                  <div class="bar-row">
+                    <div class="bar-label-line">
+                      <span>${escapeHtml(it.icon)} ${escapeHtml(it.name)}</span>
+                      <span>${count} logs</span>
+                    </div>
+                    <div class="bar-track">
+                      <div class="bar-fill" style="width:${pct}%; background:${it.color};"></div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `;
+        } else if (!isMultiFiltered && state.analyticsCategoryFilter === 'all') {
+          const catStats = sortedCats.map((cat) => {
+            const catItems = db.items.filter((i) => i.categoryId === cat.id);
+            let count = 0;
+            catItems.forEach((it) => {
+              count += it.logs.filter((l) => l.date.startsWith(monthPrefix)).length;
+            });
+            return { cat, count };
+          });
+          const maxCount = Math.max(...catStats.map((s) => s.count), 1);
+
+          breakdownHtml = `
+            <div class="card">
+              <h3 class="card-title">Monthly Balance by List</h3>
+              ${catStats.map(({ cat, count }) => {
+                const pct = Math.round((count / maxCount) * 100);
+                return `
+                  <div class="bar-row">
+                    <div class="bar-label-line">
+                      <span>${escapeHtml(cat.icon)} ${escapeHtml(cat.name)}</span>
+                      <span>${count} logs</span>
+                    </div>
+                    <div class="bar-track">
+                      <div class="bar-fill" style="width:${pct}%; background:${cat.color};"></div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `;
+        } else if (!isMultiFiltered && state.analyticsCategoryFilter !== 'all' && availableSteps.length > 1) {
+          const activeCat = sortedCats.find((c) => c.id === state.analyticsCategoryFilter);
+          const stepStats = availableSteps.map((it) => ({
+            it,
+            count: it.logs.filter((l) => l.date.startsWith(monthPrefix)).length
+          }));
+          const maxCount = Math.max(...stepStats.map((s) => s.count), 1);
+
+          breakdownHtml = `
+            <div class="card">
+              <h3 class="card-title">${activeCat ? escapeHtml(activeCat.name) : 'List'} Breakdown</h3>
+              ${stepStats.map(({ it, count }) => {
+                const pct = Math.round((count / maxCount) * 100);
+                return `
+                  <div class="bar-row">
+                    <div class="bar-label-line">
+                      <span>${escapeHtml(it.icon)} ${escapeHtml(it.name)}</span>
+                      <span>${count} logs</span>
+                    </div>
+                    <div class="bar-track">
+                      <div class="bar-fill" style="width:${pct}%; background:${it.color};"></div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `;
+        }
+
+        // 12-Week (84-Day) Consistency Matrix
+        const today = new Date();
+        const dayOfWeekMon = (today.getDay() + 6) % 7;
+        const endOfWeek = addDays(today, 6 - dayOfWeekMon);
+        const start84 = addDays(endOfWeek, -83);
+
+        let colsHtml = '';
+        for (let w = 0; w < 12; w++) {
+          let cells = '';
+          for (let d = 0; d < 7; d++) {
+            const cur = addDays(start84, w * 7 + d);
+            const dStr = toLocalDateStr(cur);
+            const isFuture = dStr > tStr;
+            const c = (logsByDate[dStr] || []).length;
+            let bg = 'var(--surface-subtle)';
+            if (isFuture) {
+              bg = 'transparent';
+            } else if (c > 0) {
+              const opacity = singleStep ? 1 : Math.min(0.28 + c * 0.22, 1);
+              bg = activeColor;
+              cells += `<div class="heat-cell" style="background:${bg}; opacity:${opacity};" title="${dStr}: ${c}"></div>`;
+              continue;
+            }
+            cells += `<div class="heat-cell" style="background:${bg};" title="${dStr}: ${c}"></div>`;
+          }
+          colsHtml += `<div class="heatmap-col">${cells}</div>`;
+        }
+
+        return `
+          <div class="pill-scroller">
+            <button class="filter-pill ${state.analyticsCategoryFilter === 'all' ? 'active' : ''}" data-action="analytics-cat" data-cat="all">
+              All Lists
+            </button>
+            ${sortedCats.map((cat) => `
+              <button class="filter-pill ${state.analyticsCategoryFilter === cat.id ? 'active' : ''}" data-action="analytics-cat" data-cat="${cat.id}">
+                <span>${escapeHtml(cat.icon)}</span>
+                <span>${escapeHtml(cat.name)}</span>
+              </button>
+            `).join('')}
+          </div>
+
+          <!-- Multi-Step Chip Drawer -->
+          <div class="step-drawer-bar">
+            <button type="button" class="drawer-trigger ${isMultiFiltered ? 'filtered' : ''}" data-action="toggle-step-drawer">
+              <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(drawerLabel)}</span>
+              <span style="font-size:12px; color:var(--text-secondary); flex-shrink:0;">${state.stepDrawerOpen ? '▲ Done' : '▼ Filter Steps'}</span>
+            </button>
+            ${isMultiFiltered ? `
+              <button type="button" class="icon-btn" style="width:auto; padding:0 11px; font-size:12px;" data-action="clear-step-filter">All</button>
+            ` : ''}
+          </div>
+
+          ${state.stepDrawerOpen ? `
+            <div class="step-chip-tray">
+              <div class="tray-header">
+                <span>Select 1, 2, or more steps to compare</span>
+                ${isMultiFiltered ? `<button type="button" class="category-add-btn" style="padding:0;" data-action="clear-step-filter">Reset to All</button>` : ''}
+              </div>
+              <div class="tray-chips">
+                ${availableSteps.map((s) => {
+                  const sel = state.analyticsSelectedSteps.includes(s.id);
+                  return `
+                    <button
+                      type="button"
+                      class="multi-chip ${sel ? 'selected' : ''}"
+                      style="${sel ? `border-color:${s.color}; box-shadow:0 0 0 1px ${s.color}33;` : ''}"
+                      data-action="toggle-multi-step"
+                      data-step-id="${s.id}"
+                    >
+                      <span class="chip-dot" style="background:${s.color};"></span>
+                      <span>${escapeHtml(s.icon)} ${escapeHtml(s.name)}</span>
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="kpi-grid">
+            <div class="kpi-box">
+              <div class="kpi-label">This Month</div>
+              <div class="kpi-value">${monthTotalLogs}</div>
+              <div class="kpi-sub">${monthLabel}</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-label">Active Days</div>
+              <div class="kpi-value">${activeDaysSet.size}</div>
+              <div class="kpi-sub">Out of ${daysInMonth} days</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-label">${thirdKpiLabel}</div>
+              <div class="kpi-value">${thirdKpiValue}</div>
+              <div class="kpi-sub">${thirdKpiSub}</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-label">Last Logged</div>
+              <div class="kpi-value">${lastEverText}</div>
+              <div class="kpi-sub">${lastEver ? formatDisplayDate(lastEver) : 'No history'}</div>
+            </div>
+          </div>
+
+          <div class="card">
+            ${relevantTags.length > 0 ? `
+              <div class="tag-highlight-bar">
+                <span class="highlight-label">Highlight:</span>
+                ${relevantTags.map((t) => `
+                  <button
+                    type="button"
+                    class="tag-filter-chip ${state.highlightedTagId === t.id ? 'active' : ''}"
+                    data-action="toggle-highlight-tag"
+                    data-tag-id="${t.id}"
+                  >
+                    <span>${escapeHtml(t.icon)}</span>
+                    <span>${escapeHtml(t.name)}</span>
+                  </button>
+                `).join('')}
+              </div>
+            ` : ''}
+
+            <div class="cal-nav">
+              <span class="cal-month-title">${monthLabel}</span>
+              <div class="cal-nav-btns">
+                <button class="icon-btn" data-action="cal-prev">‹</button>
+                <button class="icon-btn" data-action="cal-today" style="width:auto; padding:0 10px; font-size:12px;">Today</button>
+                <button class="icon-btn" data-action="cal-next">›</button>
+              </div>
+            </div>
+            <div class="cal-weekdays">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+            <div class="cal-grid">${calCellsHtml}</div>
+
+            <div class="day-inspector">
+              <div class="day-inspector-header">
+                <span class="day-inspector-title">${formatDisplayDate(state.selectedDate)}</span>
+                <span class="day-inspector-hint">Tap name for details · ✓ to log</span>
+              </div>
+              ${tagsSectionHtml}
+              <div class="retro-list">${retroRowsHtml}</div>
+            </div>
+          </div>
+
+          ${breakdownHtml}
+
+          <div class="card">
+            <div class="card-title">
+              <span>12-Week Rhythm</span>
+              <span style="font-size:11px; color:var(--text-muted); font-weight:600;">Last 84 days</span>
+            </div>
+            <div class="heatmap-grid">${colsHtml}</div>
+          </div>
+        `;
+      }
+
+      // --- View 3: Manage Lists, Tags, Steps & Data ---
+      function renderManageView() {
+        const sortedCats = [...db.categories].sort((a, b) => a.order - b.order);
+
+        const catsHtml = sortedCats.map((cat, idx) => {
+          const count = db.items.filter((i) => i.categoryId === cat.id).length;
+          return `
+            <div class="manage-item">
+              <div class="manage-item-left">
+                <span class="step-icon-box" style="width:36px; height:36px; background:${cat.color}22; font-size:18px;">${escapeHtml(cat.icon)}</span>
+                <div>
+                  <div class="manage-item-title">${escapeHtml(cat.name)}</div>
+                  <div class="manage-item-sub">${count} step${count === 1 ? '' : 's'}</div>
+                </div>
+              </div>
+              <div class="manage-actions">
+                ${idx > 0 ? `<button class="mini-action-btn" data-action="move-cat" data-id="${cat.id}" data-dir="-1">↑</button>` : ''}
+                ${idx < sortedCats.length - 1 ? `<button class="mini-action-btn" data-action="move-cat" data-id="${cat.id}" data-dir="1">↓</button>` : ''}
+                <button class="mini-action-btn" data-action="edit-cat" data-id="${cat.id}">Edit</button>
+                <button class="mini-action-btn danger" data-action="delete-cat" data-id="${cat.id}">✕</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        const tagsManageHtml = sortedCats.map((cat) => {
+          const catTags = db.tags.filter((t) => t.categoryId === cat.id);
+          return `
+            <div class="tag-manage-group">
+              <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span style="font-size:13px; font-weight:700;">${escapeHtml(cat.icon)} ${escapeHtml(cat.name)}</span>
+                <button class="category-add-btn" style="padding:2px 6px;" data-action="open-tag-modal" data-cat-id="${cat.id}">+ Add Tag</button>
+              </div>
+              <div class="tag-pill-list">
+                ${catTags.length === 0
+                  ? `<span style="font-size:12px; color:var(--text-muted);">No tags yet</span>`
+                  : catTags.map((t) => `
+                      <span class="manage-tag-chip">
+                        <span>${escapeHtml(t.icon)} ${escapeHtml(t.name)}</span>
+                        <button type="button" class="manage-tag-del" data-action="delete-tag" data-id="${t.id}" aria-label="Delete tag">✕</button>
+                      </span>
+                    `).join('')
+                }
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        const stepsByCatHtml = sortedCats.map((cat) => {
+          const catItems = db.items
+            .filter((i) => i.categoryId === cat.id)
+            .sort((a, b) => a.order - b.order);
+
+          return `
+            <div class="card">
+              <div class="card-title">
+                <span>${escapeHtml(cat.icon)} ${escapeHtml(cat.name)} Steps</span>
+                <button class="category-add-btn" data-action="open-step-modal" data-cat-id="${cat.id}">+ Add Step</button>
+              </div>
+              ${catItems.length === 0
+                ? `<div style="font-size:13px; color:var(--text-muted);">No steps in this list yet.</div>`
+                : catItems.map((it, idx) => `
+                    <div class="manage-item">
+                      <div class="manage-item-left">
+                        <span style="font-size:18px;">${escapeHtml(it.icon)}</span>
+                        <div style="min-width:0;">
+                          <div class="manage-item-title">${escapeHtml(it.name)}</div>
+                          <div class="manage-item-sub">
+                            ${it.logs.length} logs${it.cadenceDays ? ` · ${getCadenceLabel(it.cadenceDays)}` : ''}${it.currentProduct ? ` · 🧴 ${escapeHtml(it.currentProduct)}` : ''}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="manage-actions">
+                        ${idx > 0 ? `<button class="mini-action-btn" data-action="move-step" data-id="${it.id}" data-dir="-1">↑</button>` : ''}
+                        ${idx < catItems.length - 1 ? `<button class="mini-action-btn" data-action="move-step" data-id="${it.id}" data-dir="1">↓</button>` : ''}
+                        <button class="mini-action-btn" data-action="edit-step" data-id="${it.id}">Edit</button>
+                        <button class="mini-action-btn danger" data-action="delete-step" data-id="${it.id}">✕</button>
+                      </div>
+                    </div>
+                  `).join('')
+              }
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="card">
+            <div class="card-title">
+              <span>Main Lists</span>
+              <button class="category-add-btn" data-action="open-category-modal">+ New List</button>
+            </div>
+            ${catsHtml || '<div style="font-size:13px; color:var(--text-muted);">No lists created yet.</div>'}
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <span>Check-In Tags by List</span>
+              <button class="category-add-btn" data-action="open-tag-modal">+ New Tag</button>
+            </div>
+            ${tagsManageHtml}
+          </div>
+
+          ${stepsByCatHtml}
+
+          <div class="card">
+            <h3 class="card-title">Backup & Data</h3>
+            <button class="btn-block primary" data-action="export-json">⬇️ Download JSON Backup</button>
+            <div class="export-timestamp">Last exported: ${formatExportTimestamp(db.lastExported)}</div>
+            <button class="btn-block" data-action="trigger-import">⬆️ Import JSON Backup</button>
+            <button class="btn-block danger" data-action="clear-logs">🧹 Clear All History Logs (Keep Lists)</button>
+          </div>
+        `;
+      }
+
+      // --- Modals ---
+      function renderSwatches(containerId, selectedColor, type) {
+        const el = document.getElementById(containerId);
+        el.innerHTML = PALETTE.map((c) => `
+          <button
+            type="button"
+            class="swatch ${c.toLowerCase() === selectedColor.toLowerCase() ? 'selected' : ''}"
+            style="background:${c};"
+            data-action="pick-color"
+            data-type="${type}"
+            data-color="${c}"
+          ></button>
+        `).join('');
+      }
+
+      function updateStripToggleButtons() {
+        document.getElementById('stripBtn14d').classList.toggle('active', state.modalStripMode === '14d');
+        document.getElementById('stripBtn12w').classList.toggle('active', state.modalStripMode === '12w');
+      }
+
+      function openStepModal(stepId = null, defaultCatId = null) {
+        if (db.categories.length === 0) {
+          showToast('Create a main list first!');
+          openCategoryModal();
+          return;
+        }
+        const sortedCats = [...db.categories].sort((a, b) => a.order - b.order);
+        const catSelect = document.getElementById('stepCategoryInput');
+        catSelect.innerHTML = sortedCats.map((c) => `<option value="${c.id}">${escapeHtml(c.icon)} ${escapeHtml(c.name)}</option>`).join('');
+
+        if (stepId) {
+          const item = db.items.find((i) => i.id === stepId);
+          if (!item) return;
+          document.getElementById('stepModalTitle').textContent = 'Edit Step';
+          document.getElementById('stepIdInput').value = item.id;
+          catSelect.value = item.categoryId;
+          document.getElementById('stepNameInput').value = item.name;
+          document.getElementById('stepProductInput').value = item.currentProduct || '';
+          document.getElementById('stepIconInput').value = item.icon;
+          document.getElementById('stepCadenceInput').value = String(item.cadenceDays || 0);
+          document.getElementById('stepNotesInput').value = item.notes || '';
+          state.modalStripMode = item.stripMode || '14d';
+          state.selectedStepColor = item.color;
+        } else {
+          const fallbackCatId = (defaultCatId && defaultCatId !== 'due') ? defaultCatId : sortedCats[0].id;
+          const chosenCat = sortedCats.find((c) => c.id === fallbackCatId) || sortedCats[0];
+          document.getElementById('stepModalTitle').textContent = 'Add Step';
+          document.getElementById('stepIdInput').value = '';
+          catSelect.value = chosenCat.id;
+          document.getElementById('stepNameInput').value = '';
+          document.getElementById('stepProductInput').value = '';
+          document.getElementById('stepIconInput').value = chosenCat.icon || '✨';
+          document.getElementById('stepCadenceInput').value = '0';
+          document.getElementById('stepNotesInput').value = '';
+          state.modalStripMode = '14d';
+          state.selectedStepColor = chosenCat.color || PALETTE[0];
+        }
+
+        updateStripToggleButtons();
+        renderSwatches('stepColorSwatches', state.selectedStepColor, 'step');
+        document.getElementById('stepModal').classList.add('open');
+      }
+
+      function openCategoryModal(catId = null) {
+        if (catId) {
+          const cat = db.categories.find((c) => c.id === catId);
+          if (!cat) return;
+          document.getElementById('categoryModalTitle').textContent = 'Edit List';
+          document.getElementById('categoryIdInput').value = cat.id;
+          document.getElementById('categoryNameInput').value = cat.name;
+          document.getElementById('categoryIconInput').value = cat.icon;
+          state.selectedCatColor = cat.color;
+        } else {
+          document.getElementById('categoryModalTitle').textContent = 'New List';
+          document.getElementById('categoryIdInput').value = '';
+          document.getElementById('categoryNameInput').value = '';
+          document.getElementById('categoryIconInput').value = '🧴';
+          state.selectedCatColor = PALETTE[db.categories.length % PALETTE.length];
+        }
+        renderSwatches('categoryColorSwatches', state.selectedCatColor, 'cat');
+        document.getElementById('categoryModal').classList.add('open');
+      }
+
+      function openTagModal(defaultCatId = null) {
+        if (db.categories.length === 0) {
+          showToast('Create a main list first!');
+          return;
+        }
+        const sortedCats = [...db.categories].sort((a, b) => a.order - b.order);
+        const catSelect = document.getElementById('tagCategoryInput');
+        catSelect.innerHTML = sortedCats.map((c) => `<option value="${c.id}">${escapeHtml(c.icon)} ${escapeHtml(c.name)}</option>`).join('');
+        if (defaultCatId) catSelect.value = defaultCatId;
+        document.getElementById('tagIconInput').value = '✨';
+        document.getElementById('tagNameInput').value = '';
+        document.getElementById('tagModal').classList.add('open');
+      }
+
+      // Compute Product Usage & Same-Day / Next-Day Tag Correlation
+      function computeProductStats(item) {
+        const groups = new Map();
+        const tagLookup = new Map(db.tags.map((t) => [t.id, t]));
+
+        item.logs.forEach((entry) => {
+          const key = (entry.product || '').trim() || '__NONE__';
+          if (!groups.has(key)) {
+            groups.set(key, {
+              productName: key === '__NONE__' ? 'No product recorded' : key,
+              isUnlabeled: key === '__NONE__',
+              count: 0,
+              tagCounts: new Map()
+            });
+          }
+          const grp = groups.get(key);
+          grp.count++;
+
+          // Check tags on same day and next day
+          const sameDayTags = db.dayTags[entry.date] || [];
+          const nextDateStr = toLocalDateStr(addDays(parseLocalDate(entry.date), 1));
+          const nextDayTags = db.dayTags[nextDateStr] || [];
+          const combinedTagIds = new Set([...sameDayTags, ...nextDayTags]);
+
+          combinedTagIds.forEach((tid) => {
+            if (tagLookup.has(tid)) {
+              grp.tagCounts.set(tid, (grp.tagCounts.get(tid) || 0) + 1);
+            }
+          });
+        });
+
+        return Array.from(groups.values())
+          .sort((a, b) => {
+            if (a.isUnlabeled !== b.isUnlabeled) return a.isUnlabeled ? 1 : -1;
+            return b.count - a.count;
+          })
+          .map((g) => ({
+            ...g,
+            correlations: Array.from(g.tagCounts.entries())
+              .map(([tid, cnt]) => ({ tag: tagLookup.get(tid), count: cnt }))
+              .sort((a, b) => b.count - a.count)
+          }));
+      }
+
+      function openDetailModal(stepId, keepSwitchOpen = false) {
+        const item = db.items.find((i) => i.id === stepId);
+        if (!item) return;
+        if (!keepSwitchOpen) state.detailSwitchingProduct = false;
+
+        const cat = db.categories.find((c) => c.id === item.categoryId);
+        const status = getStepStatus(item);
+        const avg = computeAverageInterval(item.logs);
+        const recentLogs = [...item.logs].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 12);
+        const prevProds = getPreviousProducts(item);
+        const prodStats = computeProductStats(item);
+        const currentProd = (item.currentProduct || '').trim();
+
+        const body = document.getElementById('detailModalBody');
+        body.innerHTML = `
+          <div class="modal-header">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div class="step-icon-box" style="background:${item.color}22;">${escapeHtml(item.icon)}</div>
+              <div>
+                <h2 class="modal-title">${escapeHtml(item.name)}</h2>
+                <div style="font-size:12px; color:var(--text-secondary);">${cat ? `${escapeHtml(cat.icon)} ${escapeHtml(cat.name)}` : ''}</div>
+              </div>
+            </div>
+            <button class="icon-btn" data-action="close-modals">✕</button>
+          </div>
+
+          <!-- Active Product & Quick Switch -->
+          <div style="background:var(--bg); border-radius:12px; padding:11px 12px; margin-bottom:12px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+              <div style="min-width:0;">
+                <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.04em;">Active Product</div>
+                <div style="font-size:13px; font-weight:700; color:${currentProd ? 'var(--text-primary)' : 'var(--text-muted)'}; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  ${currentProd ? `🧴 ${escapeHtml(currentProd)}` : 'None set (optional)'}
+                </div>
+              </div>
+              <button type="button" class="mini-action-btn" data-action="toggle-detail-product-switch" data-step-id="${item.id}">
+                ${state.detailSwitchingProduct ? 'Cancel' : (currentProd ? 'Change' : '+ Set')}
+              </button>
+            </div>
+            ${state.detailSwitchingProduct ? `
+              <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border);">
+                <div style="display:flex; gap:6px;">
+                  <input type="text" class="form-input" id="detailProductInput" value="${escapeHtml(currentProd)}" placeholder="Enter product name..." style="padding:8px 10px;" />
+                  <button type="button" class="btn-primary-sm" style="border-radius:10px;" data-action="save-detail-product" data-step-id="${item.id}">Save</button>
+                </div>
+                ${prevProds.length > 0 ? `
+                  <div class="quick-pick-pills">
+                    ${prevProds.map((p) => `
+                      <button type="button" class="quick-pick-pill" data-action="pick-detail-product" data-step-id="${item.id}" data-product="${escapeHtml(p)}">
+                        ${escapeHtml(p)}
+                      </button>
+                    `).join('')}
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+          </div>
+
+          ${item.notes ? `<div style="background:var(--surface-subtle); padding:10px 12px; border-radius:10px; font-size:13px; color:var(--text-secondary); margin-bottom:12px;">📝 ${escapeHtml(item.notes)}</div>` : ''}
+
+          <div class="kpi-grid">
+            <div class="kpi-box">
+              <div class="kpi-label">Total Logs</div>
+              <div class="kpi-value">${item.logs.length}</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-label">Avg. Frequency</div>
+              <div class="kpi-value">${avg ? `${avg}d` : '—'}</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px; margin-bottom:16px;">
+            <button class="btn-block primary" style="margin:0; background:${status.doneToday ? 'var(--success)' : item.color}; border:none;" data-action="detail-toggle-today" data-step-id="${item.id}">
+              ${status.doneToday ? '✓ Completed Today (Undo)' : '+ Mark Done Today'}
+            </button>
+            <button class="btn-block" style="margin:0; width:auto;" data-action="edit-step" data-id="${item.id}">Edit</button>
+          </div>
+
+          ${prodStats.some((p) => !p.isUnlabeled) ? `
+            <div class="form-label">Products Used & Next-Day Tags</div>
+            <div style="margin-bottom:16px;">
+              ${prodStats.map((ps) => `
+                <div class="prod-history-card">
+                  <div class="prod-history-top">
+                    <span class="prod-history-name" style="${ps.isUnlabeled ? 'color:var(--text-muted); font-weight:600;' : ''}">
+                      ${ps.isUnlabeled ? ps.productName : `🧴 ${escapeHtml(ps.productName)}`}
+                    </span>
+                    <span class="prod-history-count">${ps.count} use${ps.count === 1 ? '' : 's'}</span>
+                  </div>
+                  ${ps.correlations.length > 0 ? `
+                    <div class="prod-corr-tags">
+                      ${ps.correlations.map((c) => `
+                        <span class="corr-badge">${escapeHtml(c.tag.icon)} ${escapeHtml(c.tag.name)} ×${c.count}</span>
+                      `).join('')}
+                    </div>
+                  ` : `<div style="font-size:11px; color:var(--text-muted);">No check-in tags logged on or after these dates</div>`}
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <div class="form-label">Recent History (Tap to remove)</div>
+          ${recentLogs.length === 0
+            ? `<div style="font-size:13px; color:var(--text-muted); padding:8px 0;">No dates logged yet.</div>`
+            : `<div style="display:flex; flex-wrap:wrap; gap:6px;">
+                ${recentLogs.map((entry) => `
+                  <button class="mini-action-btn" data-action="detail-remove-date" data-step-id="${item.id}" data-date="${entry.date}">
+                    ${formatDisplayDate(entry.date)}${entry.product ? ` · ${escapeHtml(entry.product)}` : ''} ✕
+                  </button>
+                `).join('')}
+              </div>`
+          }
+        `;
+        document.getElementById('detailModal').classList.add('open');
+      }
+
+      function closeModals() {
+        state.detailSwitchingProduct = false;
+        document.querySelectorAll('.modal-backdrop').forEach((m) => m.classList.remove('open'));
+      }
+
+      // --- Backup Export / Import ---
+      function exportData() {
+        db.lastExported = new Date().toISOString();
+        saveData();
+        const dataStr = JSON.stringify(db, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `carelog-backup-${todayStr()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        render();
+        showToast('Backup file exported ✓');
+      }
+
+      function importData(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const parsed = JSON.parse(e.target.result);
+            db = normalizeData(parsed);
+            saveData();
+            render();
+            showToast('Backup restored successfully ✓');
+          } catch (err) {
+            alert('Invalid backup file. Please select a valid CareLog JSON backup.');
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      // --- Event Delegation ---
+      document.addEventListener('click', (e) => {
+        const tabBtn = e.target.closest('.nav-tab');
+        if (tabBtn) {
+          state.activeTab = tabBtn.dataset.tab;
+          state.editingPastProductStepId = null;
+          state.inlineTagFormOpen = false;
+          render();
+          return;
+        }
+
+        if (e.target.classList.contains('modal-backdrop')) {
+          closeModals();
+          return;
+        }
+
+        const actionEl = e.target.closest('[data-action]');
+        if (!actionEl) return;
+
+        const action = actionEl.dataset.action;
+
+        if (action === 'close-modals') {
+          closeModals();
+        } else if (action === 'filter-today') {
+          state.todayCategoryFilter = actionEl.dataset.cat;
+          render();
+        } else if (action === 'toggle-today') {
+          toggleLog(actionEl.dataset.stepId, todayStr());
+        } else if (action === 'open-step-modal') {
+          openStepModal(null, actionEl.dataset.catId || state.todayCategoryFilter);
+        } else if (action === 'open-category-modal') {
+          openCategoryModal();
+        } else if (action === 'open-tag-modal') {
+          openTagModal(actionEl.dataset.catId || null);
+        } else if (action === 'open-detail') {
+          openDetailModal(actionEl.dataset.stepId);
+        } else if (action === 'detail-toggle-today') {
+          toggleLog(actionEl.dataset.stepId, todayStr());
+          openDetailModal(actionEl.dataset.stepId, state.detailSwitchingProduct);
+        } else if (action === 'detail-remove-date') {
+          toggleLog(actionEl.dataset.stepId, actionEl.dataset.date);
+          openDetailModal(actionEl.dataset.stepId, state.detailSwitchingProduct);
+        } else if (action === 'toggle-detail-product-switch') {
+          state.detailSwitchingProduct = !state.detailSwitchingProduct;
+          openDetailModal(actionEl.dataset.stepId, state.detailSwitchingProduct);
+        } else if (action === 'save-detail-product') {
+          const item = db.items.find((i) => i.id === actionEl.dataset.stepId);
+          const input = document.getElementById('detailProductInput');
+          if (item && input) {
+            item.currentProduct = input.value.trim();
+            saveData();
+            state.detailSwitchingProduct = false;
+            render();
+            openDetailModal(item.id, false);
+            showToast('Active product updated ✓');
+          }
+        } else if (action === 'pick-detail-product') {
+          const item = db.items.find((i) => i.id === actionEl.dataset.stepId);
+          if (item) {
+            item.currentProduct = actionEl.dataset.product;
+            saveData();
+            state.detailSwitchingProduct = false;
+            render();
+            openDetailModal(item.id, false);
+            showToast('Switched to ' + actionEl.dataset.product);
+          }
+        } else if (action === 'set-strip-mode') {
+          state.modalStripMode = actionEl.dataset.mode;
+          updateStripToggleButtons();
+        } else if (action === 'pick-color') {
+          if (actionEl.dataset.type === 'step') {
+            state.selectedStepColor = actionEl.dataset.color;
+            renderSwatches('stepColorSwatches', state.selectedStepColor, 'step');
+          } else {
+            state.selectedCatColor = actionEl.dataset.color;
+            renderSwatches('categoryColorSwatches', state.selectedCatColor, 'cat');
+          }
+        } else if (action === 'analytics-cat') {
+          state.analyticsCategoryFilter = actionEl.dataset.cat;
+          state.analyticsSelectedSteps = [];
+          state.editingPastProductStepId = null;
+          render();
+        } else if (action === 'toggle-step-drawer') {
+          state.stepDrawerOpen = !state.stepDrawerOpen;
+          render();
+        } else if (action === 'toggle-multi-step') {
+          const sid = actionEl.dataset.stepId;
+          const idx = state.analyticsSelectedSteps.indexOf(sid);
+          if (idx >= 0) state.analyticsSelectedSteps.splice(idx, 1);
+          else state.analyticsSelectedSteps.push(sid);
+          render();
+        } else if (action === 'clear-step-filter') {
+          state.analyticsSelectedSteps = [];
+          render();
+        } else if (action === 'toggle-highlight-tag') {
+          const tid = actionEl.dataset.tagId;
+          state.highlightedTagId = state.highlightedTagId === tid ? null : tid;
+          render();
+        } else if (action === 'toggle-day-tag') {
+          toggleDayTag(actionEl.dataset.date, actionEl.dataset.tagId);
+        } else if (action === 'toggle-inline-tag-form') {
+          state.inlineTagFormOpen = !state.inlineTagFormOpen;
+          render();
+        } else if (action === 'cal-prev') {
+          state.calMonth--;
+          if (state.calMonth < 0) { state.calMonth = 11; state.calYear--; }
+          state.editingPastProductStepId = null;
+          render();
+        } else if (action === 'cal-next') {
+          state.calMonth++;
+          if (state.calMonth > 11) { state.calMonth = 0; state.calYear++; }
+          state.editingPastProductStepId = null;
+          render();
+        } else if (action === 'cal-today') {
+          const now = new Date();
+          state.calYear = now.getFullYear();
+          state.calMonth = now.getMonth();
+          state.selectedDate = todayStr();
+          state.editingPastProductStepId = null;
+          render();
+        } else if (action === 'cal-select-day') {
+          state.selectedDate = actionEl.dataset.date;
+          state.editingPastProductStepId = null;
+          render();
+        } else if (action === 'retro-toggle') {
+          toggleLog(actionEl.dataset.stepId, actionEl.dataset.date);
+        } else if (action === 'open-past-product-edit') {
+          const sid = actionEl.dataset.stepId;
+          state.editingPastProductStepId = state.editingPastProductStepId === sid ? null : sid;
+          render();
+        } else if (action === 'save-past-product') {
+          const sid = actionEl.dataset.stepId;
+          const dateStr = actionEl.dataset.date;
+          const inp = document.getElementById('pastProdInput_' + sid);
+          if (inp) {
+            updateLogProduct(sid, dateStr, inp.value);
+            state.editingPastProductStepId = null;
+            render();
+          }
+        } else if (action === 'pick-past-product') {
+          const sid = actionEl.dataset.stepId;
+          const dateStr = actionEl.dataset.date;
+          updateLogProduct(sid, dateStr, actionEl.dataset.product);
+          state.editingPastProductStepId = null;
+          render();
+        } else if (action === 'edit-cat') {
+          openCategoryModal(actionEl.dataset.id);
+        } else if (action === 'delete-cat') {
+          const cat = db.categories.find((c) => c.id === actionEl.dataset.id);
+          if (!cat) return;
+          if (confirm(`Delete "${cat.name}" and all steps inside it?`)) {
+            db.categories = db.categories.filter((c) => c.id !== cat.id);
+            db.items = db.items.filter((i) => i.categoryId !== cat.id);
+            db.tags = db.tags.filter((t) => t.categoryId !== cat.id);
+            saveData();
+            render();
+            showToast('List deleted');
+          }
+        } else if (action === 'move-cat') {
+          const sorted = [...db.categories].sort((a, b) => a.order - b.order);
+          const idx = sorted.findIndex((c) => c.id === actionEl.dataset.id);
+          const targetIdx = idx + Number(actionEl.dataset.dir);
+          if (targetIdx >= 0 && targetIdx < sorted.length) {
+            [sorted[idx], sorted[targetIdx]] = [sorted[targetIdx], sorted[idx]];
+            sorted.forEach((c, i) => (c.order = i));
+            db.categories = sorted;
+            saveData();
+            render();
+          }
+        } else if (action === 'delete-tag') {
+          const tid = actionEl.dataset.id;
+          db.tags = db.tags.filter((t) => t.id !== tid);
+          Object.keys(db.dayTags).forEach((d) => {
+            db.dayTags[d] = db.dayTags[d].filter((id) => id !== tid);
+            if (db.dayTags[d].length === 0) delete db.dayTags[d];
+          });
+          saveData();
+          render();
+          showToast('Tag removed');
+        } else if (action === 'edit-step') {
+          closeModals();
+          openStepModal(actionEl.dataset.id);
+        } else if (action === 'delete-step') {
+          const step = db.items.find((i) => i.id === actionEl.dataset.id);
+          if (!step) return;
+          if (confirm(`Delete "${step.name}" and its log history?`)) {
+            db.items = db.items.filter((i) => i.id !== step.id);
+            saveData();
+            render();
+            showToast('Step deleted');
+          }
+        } else if (action === 'move-step') {
+          const step = db.items.find((i) => i.id === actionEl.dataset.id);
+          if (!step) return;
+          const siblings = db.items.filter((i) => i.categoryId === step.categoryId).sort((a, b) => a.order - b.order);
+          const idx = siblings.findIndex((s) => s.id === step.id);
+          const targetIdx = idx + Number(actionEl.dataset.dir);
+          if (targetIdx >= 0 && targetIdx < siblings.length) {
+            [siblings[idx], siblings[targetIdx]] = [siblings[targetIdx], siblings[idx]];
+            siblings.forEach((s, i) => (s.order = i));
+            saveData();
+            render();
+          }
+        } else if (action === 'export-json') {
+          exportData();
+        } else if (action === 'trigger-import') {
+          document.getElementById('importFileInput').click();
+        } else if (action === 'clear-logs') {
+          if (confirm('Clear all logged dates and daily check-in tags? Your lists, steps, and tag definitions will remain.')) {
+            db.items.forEach((i) => (i.logs = []));
+            db.dayTags = {};
+            saveData();
+            render();
+            showToast('All history cleared');
+          }
+        }
+      });
+
+      document.addEventListener('change', (e) => {
+        if (e.target.id === 'stepCadenceInput') {
+          const days = Number(e.target.value) || 0;
+          state.modalStripMode = days >= 7 ? '12w' : '14d';
+          updateStripToggleButtons();
+        } else if (e.target.id === 'importFileInput' && e.target.files[0]) {
+          importData(e.target.files[0]);
+          e.target.value = '';
+        }
+      });
+
+      // Inline Tag Form Submit inside Analytics Day Inspector
+      document.addEventListener('submit', (e) => {
+        if (e.target.id === 'inlineTagForm') {
+          e.preventDefault();
+          const categoryId = document.getElementById('inlineTagCatInput').value;
+          const icon = document.getElementById('inlineTagIconInput').value.trim() || '✨';
+          const name = document.getElementById('inlineTagNameInput').value.trim();
+          if (!name || !categoryId) return;
+
+          const newTag = {
+            id: 'tag_' + Date.now(),
+            categoryId,
+            name,
+            icon
+          };
+          db.tags.push(newTag);
+          if (!db.dayTags[state.selectedDate]) db.dayTags[state.selectedDate] = [];
+          db.dayTags[state.selectedDate].push(newTag.id);
+          state.inlineTagFormOpen = false;
+          saveData();
+          render();
+          showToast('Tag created & applied ✓');
+        }
+      });
+
+      // Step Form Submit
+      document.getElementById('stepForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = document.getElementById('stepIdInput').value;
+        const categoryId = document.getElementById('stepCategoryInput').value;
+        const name = document.getElementById('stepNameInput').value.trim();
+        const currentProduct = document.getElementById('stepProductInput').value.trim();
+        const icon = document.getElementById('stepIconInput').value.trim() || '✨';
+        const cadenceDays = Number(document.getElementById('stepCadenceInput').value) || 0;
+        const notes = document.getElementById('stepNotesInput').value.trim();
+
+        if (!name) return;
+
+        if (id) {
+          const item = db.items.find((i) => i.id === id);
+          if (item) {
+            item.categoryId = categoryId;
+            item.name = name;
+            item.currentProduct = currentProduct;
+            item.icon = icon;
+            item.cadenceDays = cadenceDays;
+            item.stripMode = state.modalStripMode;
+            item.notes = notes;
+            item.color = state.selectedStepColor;
+          }
+          showToast('Step updated');
+        } else {
+          const maxOrder = db.items
+            .filter((i) => i.categoryId === categoryId)
+            .reduce((m, i) => Math.max(m, i.order), -1);
+          db.items.push({
+            id: 'step_' + Date.now(),
+            categoryId,
+            name,
+            currentProduct,
+            icon,
+            color: state.selectedStepColor,
+            cadenceDays,
+            stripMode: state.modalStripMode,
+            notes,
+            logs: [],
+            order: maxOrder + 1
+          });
+          showToast('Step added');
+        }
+
+        saveData();
+        closeModals();
+        render();
+      });
+
+      // Category Form Submit
+      document.getElementById('categoryForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = document.getElementById('categoryIdInput').value;
+        const name = document.getElementById('categoryNameInput').value.trim();
+        const icon = document.getElementById('categoryIconInput').value.trim() || '🧴';
+
+        if (!name) return;
+
+        if (id) {
+          const cat = db.categories.find((c) => c.id === id);
+          if (cat) {
+            cat.name = name;
+            cat.icon = icon;
+            cat.color = state.selectedCatColor;
+          }
+          showToast('List updated');
+        } else {
+          const maxOrder = db.categories.reduce((m, c) => Math.max(m, c.order), -1);
+          db.categories.push({
+            id: 'cat_' + Date.now(),
+            name,
+            icon,
+            color: state.selectedCatColor,
+            order: maxOrder + 1
+          });
+          showToast('List created');
+        }
+
+        saveData();
+        closeModals();
+        render();
+      });
+
+      // Tag Modal Submit
+      document.getElementById('tagForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const categoryId = document.getElementById('tagCategoryInput').value;
+        const icon = document.getElementById('tagIconInput').value.trim() || '✨';
+        const name = document.getElementById('tagNameInput').value.trim();
+        if (!name || !categoryId) return;
+
+        db.tags.push({
+          id: 'tag_' + Date.now(),
+          categoryId,
+          name,
+          icon
+        });
+        saveData();
+        closeModals();
+        render();
+        showToast('Tag added ✓');
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
